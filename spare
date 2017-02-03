@@ -1,0 +1,48 @@
+
+
+  function addScript(source) {
+    var script = document.createElement("script");
+    script.appendChild(document.createTextNode(source));
+    document.getElementsByTagName("head")[0].appendChild(script);
+  }
+
+  function logError(message) {
+    addScript('throw new Error("'+message.replace(/"/g,'\\"')+'");');
+  }
+
+
+    /* Make a regex pattern that matches all registered attributes.
+    var attrRE, last_n;
+    function updateRegex() {
+      if (reg_n !== last_n) {
+        last_n = reg_n;
+        attrRE = new RegExp("^v-");
+      }
+    } */
+
+
+  function parseArgumentPattern(text, pattern, directive, node) {
+    // convenience options parser for directives.
+    // text: the text of the binding.
+    // pattern: one or more space-separated words, then optional pipe-symbol (for filters/actions)
+    var actions, pat_arg = pattern;
+    text = trim(text);
+    pattern = trim(pattern);
+    if (~pattern.indexOf('|')) {
+      // pattern accepts actions.
+      actions = text.split("|");
+      pattern = trim(pattern.split("|")[0]);
+      text = trim(actions.shift());
+    }
+    var words = pattern.split(wsRE);
+    var values = text.split(wsRE);
+    if (values.length !== words.length) {
+      var msg = (directive||"attribute binding")+": wrong syntax, expecting: '"+pat_arg+"'";
+      if (node) msg += " in tag "+node.path();
+      throw new Error(msg);
+    }
+    var args = {};
+    for(var i=0; i<values.length; i++) args[words[i]] = values[i];
+    return args;
+  }
+
